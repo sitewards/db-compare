@@ -17,6 +17,7 @@ use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Sitewards\DBCompare\Exception\FileNotFoundException;
+use Sitewards\DBCompare\Exception\FileNotReadableException;
 
 class DBCompareCommand extends Command
 {
@@ -98,8 +99,11 @@ class DBCompareCommand extends Command
         $oFilePathQuestion = new Question($sQuestion);
         $oFilePathQuestion->setValidator(
             function ($sAnswer) {
-                if (!is_file($sAnswer)) {
+                if (!file_exists($sAnswer)) {
                     throw new FileNotFoundException('The file given cannot be found');
+                }
+                if (!is_readable($sAnswer)) {
+                    throw new FileNotReadableException('The file given cannot be read');
                 }
                 return $sAnswer;
             }
