@@ -12,6 +12,7 @@ use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\Question;
+use Sitewards\DBCompare\Exception\FileNotFoundException;
 
 class DBCompareCommand extends Command
 {
@@ -46,8 +47,6 @@ class DBCompareCommand extends Command
     }
 
     /**
-     * TODO: add file path validation
-     *
      * @param InputInterface $oInput
      * @param OutputInterface $oOutput
      * @param string $sQuestion
@@ -60,6 +59,14 @@ class DBCompareCommand extends Command
     ) {
         $oQuestionHelper   = $this->getHelper('question');
         $oFilePathQuestion = new Question($sQuestion);
+        $oFilePathQuestion->setValidator(
+            function ($sAnswer) {
+                if (!is_file($sAnswer)) {
+                    throw new FileNotFoundException('The file given cannot be found');
+                }
+                return $sAnswer;
+            }
+        );
         return $oQuestionHelper->ask($oInput, $oOutput, $oFilePathQuestion);
     }
 }
