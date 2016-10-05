@@ -10,6 +10,7 @@ namespace Sitewards\DBCompare;
 
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Input\InputInterface;
+use Sitewards\DBCompare\Command\DBCompareCommand;
 
 class CompareApplication extends Application
 {
@@ -22,7 +23,7 @@ class CompareApplication extends Application
      */
     protected function getCommandName(InputInterface $input)
     {
-        return 'db_compare';
+        return 'db:compare';
     }
 
     /**
@@ -34,23 +35,25 @@ class CompareApplication extends Application
     {
         // Keep the core default commands to have the HelpCommand
         // which is used when using the --help option
-        $defaultCommands = parent::getDefaultCommands();
+        $aDefaultCommands = parent::getDefaultCommands();
 
-        $defaultCommands[] = new MyCommand();
+        $aDefaultCommands[] = new DBCompareCommand();
 
-        return $defaultCommands;
+        return $aDefaultCommands;
     }
 
     /**
      * Overridden so that the application doesn't expect the command
      * name to be the first argument.
+     *
+     * @return \Symfony\Component\Console\Input\InputDefinition
      */
     public function getDefinition()
     {
-        $inputDefinition = parent::getDefinition();
+        $oInputDefinition = parent::getDefinition();
         // clear out the normal first argument, which is the command name
-        $inputDefinition->setArguments();
+        $oInputDefinition->setArguments();
 
-        return $inputDefinition;
+        return $oInputDefinition;
     }
 }
