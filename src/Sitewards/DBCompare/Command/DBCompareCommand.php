@@ -8,6 +8,8 @@
 
 namespace Sitewards\DBCompare\Command;
 
+use Doctrine\DBAL\Configuration;
+use Doctrine\DBAL\DriverManager;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -43,15 +45,17 @@ class DBCompareCommand extends Command
         $sMergingDB   = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
         $sItemToMerge = $this->getItemToMerge($oInput, $oOutput);
 
-        $sDBUser     = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
-        $sDBPassword = $this->getSensitiveDBInformation($oInput, $oOutput, 'Please enter a valid local database password:');
-
         $oOutput->writeln('Main DB file: ' . $sMainDBPath);
         $oOutput->writeln('Merging DB file: ' . $sMergingDB);
         $oOutput->writeln('Merging item: ' . $sItemToMerge);
 
+        $sDBUser     = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
+        $sDBPassword = $this->getSensitiveDBInformation($oInput, $oOutput, 'Please enter a valid local database password:');
+
         $oOutput->writeln('DB User: ' . $sDBUser);
         $oOutput->writeln('DB Password: ' . $sDBPassword);
+
+        $oDBConnection = $this->getDatabaseConnection($sDBUser, $sDBPassword);
 
         $oOutput->writeln('Ending the db:compare');
     }
@@ -129,5 +133,22 @@ class DBCompareCommand extends Command
         );
 
         return $oQuestionHelper->ask($oInput, $oOutput, $oItemQuestion);
+    }
+
+    /**
+     * @param $sDBUser
+     * @param $sDBPassword
+     * @return \Doctrine\DBAL\Connection
+     */
+    private function getDatabaseConnection($sDBUser, $sDBPassword)
+    {
+        $oDBConfig = new Configuration();
+        $aConnectionParams = [
+            'user' => $sDBUser,
+            'password' => $sDBPassword,
+            'host' => 'localhost',
+            'driver' => 'pdo_mysql',
+        ];
+        return DriverManager::getConnection($aConnectionParams, $oDBConfig);
     }
 }
