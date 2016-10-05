@@ -22,6 +22,12 @@ use Sitewards\DBCompare\Exception\FileNotReadableException;
 class DBCompareCommand extends Command
 {
     /**
+     * Names used for the temporary databases
+     */
+    const S_MAIN_DB_NAME = 'db_comp_main_db';
+    const S_MERGE_DB_NAME = 'db_comp_merge_db';
+
+    /**
      * Set-up the db:compare command
      */
     protected function configure()
@@ -43,25 +49,44 @@ class DBCompareCommand extends Command
     {
         $oOutput->writeln('Staring the db:compare');
 
-        $sMainDBPath  = $this->getFilePath($oInput, $oOutput, 'Please enter the main database file path:');
-        $sMergingDB   = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
+        $sMainDBPath = $this->getFilePath($oInput, $oOutput, 'Please enter the main database file path:');
+        $sMergingDB = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
         $sItemToMerge = $this->getItemToMerge($oInput, $oOutput);
 
         $oOutput->writeln('Main DB file: ' . $sMainDBPath);
         $oOutput->writeln('Merging DB file: ' . $sMergingDB);
         $oOutput->writeln('Merging item: ' . $sItemToMerge);
 
-        $sDBUser     = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
-        $sDBPassword = $this->getSensitiveDBInformation($oInput, $oOutput, 'Please enter a valid local database password:');
+        $sDBUser = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
+        $sDBPassword = $this->getSensitiveDBInformation(
+            $oInput,
+            $oOutput,
+            'Please enter a valid local database password:'
+        );
 
         $oOutput->writeln('DB User: ' . $sDBUser);
         $oOutput->writeln('DB Password: ' . $sDBPassword);
 
         $oDBConnection = $this->getDatabaseConnection($sDBUser, $sDBPassword);
         $this->buildTempDatabases($oDBConnection);
+        $this->insertFromFile($sDBUser, $sDBPassword, self::S_MAIN_DB_NAME, $sMainDBPath);
+        $this->insertFromFile($sDBUser, $sDBPassword, self::S_MERGE_DB_NAME, $sMergingDB);
         $this->cleanTempDatabases($oDBConnection);
 
         $oOutput->writeln('Ending the db:compare');
+    }
+
+    private function insertFromFile($sDBUser, $sDBPassword, $sDatabaseName, $sFilePath)
+    {
+        shell_exec(
+            sprintf(
+                'mysql -u %s -p%s %s < %s',
+                $sDBUser,
+                $sDBPassword,
+                $sDatabaseName,
+                $sFilePath
+            )
+        );
     }
 
     /**
@@ -70,8 +95,8 @@ class DBCompareCommand extends Command
     private function buildTempDatabases(Connection $oDBConnection)
     {
         $oSchema = $oDBConnection->getSchemaManager();
-        $oSchema->dropAndCreateDatabase('db_comp_main_db');
-        $oSchema->dropAndCreateDatabase('db_comp_merge_db');
+        $oSchema->dropAndCreateDatabase(self::S_MAIN_DB_NAME);
+        $oSchema->dropAndCreateDatabase(self::S_MERGE_DB_NAME);
     }
 
     /**
@@ -80,8 +105,8 @@ class DBCompareCommand extends Command
     private function cleanTempDatabases(Connection $oDBConnection)
     {
         $oSchema = $oDBConnection->getSchemaManager();
-        $oSchema->dropDatabase('db_comp_main_db');
-        $oSchema->dropDatabase('db_comp_merge_db');
+        $oSchema->dropDatabase(self::S_MAIN_DB_NAME);
+        $oSchema->dropDatabase(self::S_MERGE_DB_NAME);
     }
 
     /**
@@ -95,7 +120,7 @@ class DBCompareCommand extends Command
         OutputInterface $oOutput,
         $sQuestion = ''
     ) {
-        $oQuestionHelper   = $this->getHelper('question');
+        $oQuestionHelper = $this->getHelper('question');
         $oFilePathQuestion = new Question($sQuestion);
         $oFilePathQuestion->setValidator(
             function ($sAnswer) {
@@ -137,8 +162,7 @@ class DBCompareCommand extends Command
         InputInterface $oInput,
         OutputInterface $oOutput,
         $sQuestion = ''
-    )
-    {
+    ) {
         $oQuestionHelper = $this->getHelper('question');
         $oDBInfoQuestion = new Question($sQuestion);
         $oDBInfoQuestion->setHidden(true);
@@ -153,7 +177,7 @@ class DBCompareCommand extends Command
     private function getItemToMerge(InputInterface $oInput, OutputInterface $oOutput)
     {
         $oQuestionHelper = $this->getHelper('question');
-        $oItemQuestion   = new ChoiceQuestion(
+        $oItemQuestion = new ChoiceQuestion(
             'Please select the item you wish to merge',
             ['cms pages', 'cms blocks', 'system config'],
             '0'
