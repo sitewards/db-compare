@@ -10,6 +10,7 @@ namespace Sitewards\DBCompare\Command;
 
 use Doctrine\DBAL\Configuration;
 use Doctrine\DBAL\DriverManager;
+use Doctrine\DBAL\Connection;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -56,8 +57,30 @@ class DBCompareCommand extends Command
         $oOutput->writeln('DB Password: ' . $sDBPassword);
 
         $oDBConnection = $this->getDatabaseConnection($sDBUser, $sDBPassword);
+        $this->buildTempDatabases($oDBConnection);
+        $this->cleanTempDatabases($oDBConnection);
 
         $oOutput->writeln('Ending the db:compare');
+    }
+
+    /**
+     * @param Connection $oDBConnection
+     */
+    private function buildTempDatabases(Connection $oDBConnection)
+    {
+        $oSchema = $oDBConnection->getSchemaManager();
+        $oSchema->dropAndCreateDatabase('db_comp_main_db');
+        $oSchema->dropAndCreateDatabase('db_comp_merge_db');
+    }
+
+    /**
+     * @param Connection $oDBConnection
+     */
+    private function cleanTempDatabases(Connection $oDBConnection)
+    {
+        $oSchema = $oDBConnection->getSchemaManager();
+        $oSchema->dropDatabase('db_comp_main_db');
+        $oSchema->dropDatabase('db_comp_merge_db');
     }
 
     /**
@@ -138,7 +161,7 @@ class DBCompareCommand extends Command
     /**
      * @param $sDBUser
      * @param $sDBPassword
-     * @return \Doctrine\DBAL\Connection
+     * @return Connection
      */
     private function getDatabaseConnection($sDBUser, $sDBPassword)
     {
