@@ -77,6 +77,14 @@ class DBCompareCommand extends Command
         $oOutput->writeln('Ending the db:compare');
     }
 
+    /**
+     * Insert the sql files given to the tmp databases
+     * 
+     * @param string $sDBUser
+     * @param string $sDBPassword
+     * @param string $sDatabaseName
+     * @param string $sFilePath
+     */
     private function insertFromFile($sDBUser, $sDBPassword, $sDatabaseName, $sFilePath)
     {
         passthru(
