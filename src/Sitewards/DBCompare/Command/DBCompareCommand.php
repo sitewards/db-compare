@@ -43,9 +43,16 @@ class DBCompareCommand extends Command
         $sMergingDB   = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
         $sItemToMerge = $this->getItemToMerge($oInput, $oOutput);
 
+        $sDBUser     = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
+        $sDBPassword = $this->getSensitiveDBInformation($oInput, $oOutput, 'Please enter a valid local database password:');
+
         $oOutput->writeln('Main DB file: ' . $sMainDBPath);
         $oOutput->writeln('Merging DB file: ' . $sMergingDB);
-        $oOutput->writeln('Merging item : ' . $sItemToMerge);
+        $oOutput->writeln('Merging item: ' . $sItemToMerge);
+
+        $oOutput->writeln('DB User: ' . $sDBUser);
+        $oOutput->writeln('DB Password: ' . $sDBPassword);
+
         $oOutput->writeln('Ending the db:compare');
     }
 
@@ -71,6 +78,40 @@ class DBCompareCommand extends Command
             }
         );
         return $oQuestionHelper->ask($oInput, $oOutput, $oFilePathQuestion);
+    }
+
+    /**
+     * @param InputInterface $oInput
+     * @param OutputInterface $oOutput
+     * @param string $sQuestion
+     * @return string
+     */
+    private function getDBInformation(
+        InputInterface $oInput,
+        OutputInterface $oOutput,
+        $sQuestion = ''
+    ) {
+        $oQuestionHelper = $this->getHelper('question');
+        $oDBInfoQuestion = new Question($sQuestion);
+        return $oQuestionHelper->ask($oInput, $oOutput, $oDBInfoQuestion);
+    }
+
+    /**
+     * @param InputInterface $oInput
+     * @param OutputInterface $oOutput
+     * @param string $sQuestion
+     * @return string
+     */
+    private function getSensitiveDBInformation(
+        InputInterface $oInput,
+        OutputInterface $oOutput,
+        $sQuestion = ''
+    )
+    {
+        $oQuestionHelper = $this->getHelper('question');
+        $oDBInfoQuestion = new Question($sQuestion);
+        $oDBInfoQuestion->setHidden(true);
+        return $oQuestionHelper->ask($oInput, $oOutput, $oDBInfoQuestion);
     }
 
     /**
