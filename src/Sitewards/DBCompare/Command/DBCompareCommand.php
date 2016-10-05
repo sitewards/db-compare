@@ -19,6 +19,7 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 use Sitewards\DBCompare\Exception\FileNotFoundException;
 use Sitewards\DBCompare\Exception\FileNotReadableException;
 use Sitewards\DBCompare\Exception\MySqlImportException;
+use Symfony\Component\Filesystem\Filesystem;
 
 class DBCompareCommand extends Command
 {
@@ -72,9 +73,66 @@ class DBCompareCommand extends Command
         $this->buildTempDatabases($oDBConnection);
         $this->insertFromFile($sDBUser, $sDBPassword, self::S_MAIN_DB_NAME, $sMainDBPath);
         $this->insertFromFile($sDBUser, $sDBPassword, self::S_MERGE_DB_NAME, $sMergingDB);
+        $this->getDifferencesInDatabase($oDBConnection);
         $this->cleanTempDatabases($oDBConnection);
 
         $oOutput->writeln('Ending the db:compare');
+    }
+
+    private function getDifferencesInDatabase(Connection $oDBConnection, $iItemType = 0)
+    {
+        if ($iItemType === 0) {
+            $oFileSystem = new Filesystem();
+            $oFileSystem->remove('diff_core_config.sql');
+            $oFileSystem->touch('diff_core_config.sql');
+            $sDiffSql = sprintf(
+                'SELECT
+                    new_config.config_id,
+                    new_config.scope,
+                    new_config.scope_id,
+                    new_config.path,
+                    new_config.value
+                FROM
+                    %s.core_config_data AS new_config
+                WHERE
+                    ROW(
+                        new_config.config_id,
+                        new_config.scope,
+                        new_config.scope_id,
+                        new_config.path,
+                        new_config.value
+                    ) NOT IN (
+                        SELECT
+                            old_config.config_id,
+                            old_config.scope,
+                            old_config.scope_id,
+                            old_config.path,
+                            old_config.value
+                        FROM
+                            %s.core_config_data AS old_config
+                    )',
+                self::S_MERGE_DB_NAME,
+                self::S_MAIN_DB_NAME
+            );
+
+            $oDBStatement = $oDBConnection->prepare($sDiffSql);
+            $oDBStatement->execute();
+
+            while ($aRowData = $oDBStatement->fetch()) {
+                file_put_contents(
+                    'diff_core_config.sql',
+                    sprintf(
+                        "INSERT INTO core_config_data (config_id, scope, scope_id, path, value) VALUE (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\") ON DUPLICATE KEY UPDATE value=VALUE(value);\n",
+                        $aRowData['config_id'],
+                        $aRowData['scope'],
+                        $aRowData['scope_id'],
+                        $aRowData['path'],
+                        $aRowData['value']
+                    ),
+                    FILE_APPEND | LOCK_EX
+                );
+            }
+        }
     }
 
     /**
@@ -197,7 +255,7 @@ class DBCompareCommand extends Command
         $oQuestionHelper = $this->getHelper('question');
         $oItemQuestion = new ChoiceQuestion(
             'Please select the item you wish to merge',
-            ['cms pages', 'cms blocks', 'system config'],
+            ['system config'],
             '0'
         );
 
