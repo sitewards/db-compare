@@ -18,6 +18,7 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Sitewards\DBCompare\Exception\FileNotFoundException;
 use Sitewards\DBCompare\Exception\FileNotReadableException;
+use Sitewards\DBCompare\Exception\MySqlImportException;
 
 class DBCompareCommand extends Command
 {
@@ -78,15 +79,24 @@ class DBCompareCommand extends Command
 
     private function insertFromFile($sDBUser, $sDBPassword, $sDatabaseName, $sFilePath)
     {
-        shell_exec(
+        passthru(
             sprintf(
                 'mysql -u %s -p%s %s < %s',
                 $sDBUser,
                 $sDBPassword,
                 $sDatabaseName,
                 $sFilePath
-            )
+            ),
+            $iMysqlError
         );
+        if ($iMysqlError !== 0) {
+            throw new MySqlImportException(
+                sprintf(
+                    'The sql file %s could not be imported',
+                    $sFilePath
+                )
+            );
+        }
     }
 
     /**
