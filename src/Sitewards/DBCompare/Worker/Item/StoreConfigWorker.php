@@ -2,51 +2,18 @@
 
 namespace Sitewards\DBCompare\Worker\Item;
 
-use Doctrine\DBAL\Connection;
 use Sitewards\DBCompare\Worker\DBWorker;
-use Symfony\Component\Filesystem\Filesystem;
 
-class StoreConfigWorker
+class StoreConfigWorker extends \AbstractItemWorker
 {
     const S_WORKER_ID = 'system_config';
-
-    /** @var Connection */
-    private $oConnection;
-    /** @var string */
-    private $sDiffFileName = 'diff_core_config.sql';
-    /** @var Filesystem */
-    private $oFileSystem;
-
-    /**
-     * @param Connection $oConnection
-     */
-    public function __construct(Connection $oConnection)
-    {
-        $this->oConnection = $oConnection;
-        $this->oFileSystem = new Filesystem();
-    }
-
-    /**
-     * Process the difference files
-     */
-    public function processDifferenceFile()
-    {
-        $this->cleanUpOldFile();
-
-        $oDBStatement = $this->oConnection->prepare($this->getDifferenceSql());
-        $oDBStatement->execute();
-
-        while ($aRowData = $oDBStatement->fetch()) {
-            $this->writeDifferenceToFile($aRowData);
-        }
-    }
 
     /**
      * Build an sql string to get the difference between two databases
      *
      * @return string
      */
-    private function getDifferenceSql()
+    protected function getDifferenceSql()
     {
         $sDiffSql = sprintf(
             'SELECT
@@ -85,28 +52,19 @@ class StoreConfigWorker
      *
      * @param array $aRowData
      */
-    private function writeDifferenceToFile(array $aRowData)
+    protected function writeDifferenceToFile(array $aRowData)
     {
         file_put_contents(
-            $this->sDiffFileName,
+            $this->getDiffFileName(),
             sprintf(
                 "INSERT INTO core_config_data (config_id, scope, scope_id, path, value) VALUE (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE value=VALUE(value);\n",
-                $this->oConnection->quote($aRowData['config_id'], \PDO::PARAM_INT),
-                $this->oConnection->quote($aRowData['scope'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['scope_id'], \PDO::PARAM_INT),
-                $this->oConnection->quote($aRowData['path'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['value'], \PDO::PARAM_STR)
+                $this->getConnection()->quote($aRowData['config_id'], \PDO::PARAM_INT),
+                $this->getConnection()->quote($aRowData['scope'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['scope_id'], \PDO::PARAM_INT),
+                $this->getConnection()->quote($aRowData['path'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['value'], \PDO::PARAM_STR)
             ),
             FILE_APPEND | LOCK_EX
         );
-    }
-
-    /**
-     * Remove any old diff files and create a new empty one
-     */
-    private function cleanUpOldFile()
-    {
-        $this->oFileSystem->remove($this->sDiffFileName);
-        $this->oFileSystem->touch($this->sDiffFileName);
     }
 }

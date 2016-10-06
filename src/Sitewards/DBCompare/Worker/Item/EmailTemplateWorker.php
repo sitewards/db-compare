@@ -2,53 +2,20 @@
 
 namespace Sitewards\DBCompare\Worker\Item;
 
-use Doctrine\DBAL\Connection;
 use Sitewards\DBCompare\Worker\DBWorker;
-use Symfony\Component\Filesystem\Filesystem;
 
-class EmailTemplateWorker
+class EmailTemplateWorker extends \AbstractItemWorker
 {
     const S_WORKER_ID = 'email_template';
-
-    /** @var Connection */
-    private $oConnection;
-    /** @var string */
-    private $sDiffFileName = 'diff_email_template.sql';
-    /** @var Filesystem */
-    private $oFileSystem;
-
-    /**
-     * @param Connection $oConnection
-     */
-    public function __construct(Connection $oConnection)
-    {
-        $this->oConnection = $oConnection;
-        $this->oFileSystem = new Filesystem();
-    }
-
-    /**
-     * Process the difference files
-     */
-    public function processDifferenceFile()
-    {
-        $this->cleanUpOldFile();
-
-        $oDBStatement = $this->oConnection->prepare($this->getDifferenceSql());
-        $oDBStatement->execute();
-
-        while ($aRowData = $oDBStatement->fetch()) {
-            $this->writeDifferenceToFile($aRowData);
-        }
-    }
 
     /**
      * Build an sql string to get the difference between two databases
      *
      * @return string
      */
-    private function getDifferenceSql()
+    protected function getDifferenceSql()
     {
-        $sDiffSql = sprintf(
+        return sprintf(
             'SELECT
                 new_email.template_id,
                 new_email.template_code,
@@ -90,7 +57,6 @@ class EmailTemplateWorker
             DBWorker::S_MERGE_DB_NAME,
             DBWorker::S_MAIN_DB_NAME
         );
-        return $sDiffSql;
     }
 
     /**
@@ -98,35 +64,26 @@ class EmailTemplateWorker
      *
      * @param array $aRowData
      */
-    private function writeDifferenceToFile(array $aRowData)
+    protected function writeDifferenceToFile(array $aRowData)
     {
         file_put_contents(
-            $this->sDiffFileName,
+            $this->getDiffFileName(),
             sprintf(
                 "INSERT INTO core_email_template (template_id, template_code, template_text, template_styles, template_type, template_subject, template_sender_name, template_sender_email, added_at, modified_at, orig_template_code, orig_template_variables) VALUE (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE template_text=VALUE(template_text), template_styles=VALUE(template_styles), template_type=VALUE(template_type), template_subject=VALUE(template_subject), template_sender_name=VALUE(template_sender_name), template_sender_email=VALUE(template_sender_email);\n",
-                $this->oConnection->quote($aRowData['template_id'], \PDO::PARAM_INT),
-                $this->oConnection->quote($aRowData['template_code'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['template_text'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['template_styles'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['template_type'], \PDO::PARAM_INT),
-                $this->oConnection->quote($aRowData['template_subject'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['template_sender_name'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['template_sender_email'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['added_at'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['modified_at'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['orig_template_code'], \PDO::PARAM_STR),
-                $this->oConnection->quote($aRowData['orig_template_variables'], \PDO::PARAM_STR)
+                $this->getConnection()->quote($aRowData['template_id'], \PDO::PARAM_INT),
+                $this->getConnection()->quote($aRowData['template_code'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['template_text'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['template_styles'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['template_type'], \PDO::PARAM_INT),
+                $this->getConnection()->quote($aRowData['template_subject'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['template_sender_name'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['template_sender_email'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['added_at'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['modified_at'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['orig_template_code'], \PDO::PARAM_STR),
+                $this->getConnection()->quote($aRowData['orig_template_variables'], \PDO::PARAM_STR)
             ),
             FILE_APPEND | LOCK_EX
         );
-    }
-
-    /**
-     * Remove any old diff files and create a new empty one
-     */
-    private function cleanUpOldFile()
-    {
-        $this->oFileSystem->remove($this->sDiffFileName);
-        $this->oFileSystem->touch($this->sDiffFileName);
     }
 }
