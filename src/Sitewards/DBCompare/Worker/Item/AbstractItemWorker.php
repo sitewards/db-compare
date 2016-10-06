@@ -2,6 +2,7 @@
 
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Filesystem\Filesystem;
+use Sitewards\DBCompare\Exception\NoDiffFileNameGivenException;
 
 abstract class AbstractItemWorker
 {
@@ -14,9 +15,13 @@ abstract class AbstractItemWorker
 
     /**
      * @param Connection $oConnection
+     * @param string $sDiffFileName
      */
     public function __construct(Connection $oConnection, $sDiffFileName)
     {
+        if (is_null($sDiffFileName)) {
+            throw new NoDiffFileNameGivenException();
+        }
         $this->sDiffFileName = $sDiffFileName;
         $this->oConnection = $oConnection;
         $this->oFileSystem = new Filesystem();
