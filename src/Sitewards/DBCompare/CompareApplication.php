@@ -17,11 +17,11 @@ class CompareApplication extends Application
     /**
      * Gets the name of the command based on input.
      *
-     * @param InputInterface $input The input interface
+     * @param InputInterface $oInput The input interface
      *
      * @return string The command name
      */
-    protected function getCommandName(InputInterface $input)
+    protected function getCommandName(InputInterface $oInput)
     {
         return 'db:compare';
     }
