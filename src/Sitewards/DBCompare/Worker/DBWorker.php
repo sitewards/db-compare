@@ -12,8 +12,8 @@ class DBWorker
     private $sDBUsername;
     /** @var string */
     private $sDBPassword;
-    /** @var int */
-    private $iItemWorkerId;
+    /** @var string */
+    private $sItemWorkerId;
     /** @var \Doctrine\DBAL\Connection */
     private $oConnection;
 
@@ -26,13 +26,13 @@ class DBWorker
     /**
      * @param string $sDBUsername
      * @param string $sDBPassword
-     * @param int $iItemWorkerId
+     * @param string $iItemWorkerId
      */
-    public function __construct($sDBUsername, $sDBPassword, $iItemWorkerId)
+    public function __construct($sDBUsername, $sDBPassword, $sItemWorkerId)
     {
         $this->sDBUsername = $sDBUsername;
         $this->sDBPassword = $sDBPassword;
-        $this->iItemWorkerId = $iItemWorkerId;
+        $this->sItemWorkerId = $sItemWorkerId;
 
         $this->oConnection = DBConnectionFactory::getDatabaseConnection($sDBUsername, $sDBPassword);
     }
@@ -90,7 +90,7 @@ class DBWorker
      */
     public function getDifferencesInDatabase()
     {
-        $oItemWorker = ItemFactory::createById($this->iItemWorkerId, $this->oConnection);
+        $oItemWorker = ItemFactory::createById($this->sItemWorkerId, $this->oConnection);
         $oItemWorker->processDifferenceFile();
     }
 }

@@ -3,21 +3,24 @@
 namespace Sitewards\DBCompare\Factory;
 
 use Sitewards\DBCompare\Worker\Item\StoreConfigWorker;
+use Sitewards\DBCompare\Worker\Item\EmailTemplateWorker;
 use Sitewards\DBCompare\Exception\NoItemWorkerMappingException;
 use Doctrine\DBAL\Connection;
 
 class ItemFactory
 {
     /**
-     * @param int $iItemTypeId
+     * @param string $sItemTypeId
      * @param Connection $oConnection
-     * @return StoreConfigWorker
+     * @return EmailTemplateWorker|StoreConfigWorker
      */
-    public static function createById($iItemTypeId, Connection $oConnection)
+    public static function createById($sItemTypeId, Connection $oConnection)
     {
-        if ($iItemTypeId === 0) {
-            return new StoreConfigWorker($oConnection);
+        if ($sItemTypeId === StoreConfigWorker::S_WORKER_ID) {
+            return new StoreConfigWorker($oConnection, 'diff_core_config.sql');
+        } elseif ($sItemTypeId === EmailTemplateWorker::S_WORKER_ID) {
+            return new EmailTemplateWorker($oConnection, 'diff_email_template.sql');
         }
-        throw new NoItemWorkerMappingException($iItemTypeId);
+        throw new NoItemWorkerMappingException($sItemTypeId);
     }
 }

@@ -16,6 +16,8 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Sitewards\DBCompare\Exception\FileNotFoundException;
 use Sitewards\DBCompare\Exception\FileNotReadableException;
+use Sitewards\DBCompare\Worker\Item\EmailTemplateWorker;
+use Sitewards\DBCompare\Worker\Item\StoreConfigWorker;
 use Doctrine\DBAL\Exception\ConnectionException;
 
 class DBCompareCommand extends Command
@@ -45,7 +47,7 @@ class DBCompareCommand extends Command
 
             $sMainDBPath = $this->getFilePath($oInput, $oOutput, 'Please enter the main database file path:');
             $sMergingDB = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
-            $iItemToMerge = $this->getItemToMerge($oInput, $oOutput);
+            $sItemToMerge = $this->getItemToMerge($oInput, $oOutput);
 
             $sDBUser = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
             $sDBPassword = $this->getSensitiveDBInformation(
@@ -54,7 +56,7 @@ class DBCompareCommand extends Command
                 'Please enter a valid local database password:'
             );
 
-            $oDBWorker = new DBWorker($sDBUser, $sDBPassword, $iItemToMerge);
+            $oDBWorker = new DBWorker($sDBUser, $sDBPassword, $sItemToMerge);
             $oDBWorker->buildTempDatabases();
             $oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
             $oDBWorker->insertFromFile(DBWorker::S_MERGE_DB_NAME, $sMergingDB);
@@ -161,8 +163,8 @@ class DBCompareCommand extends Command
         $oQuestionHelper = $this->getHelper('question');
         $oItemQuestion = new ChoiceQuestion(
             'Please select the item you wish to merge',
-            ['system config', 'cms page', 'cms block'],
-            '0'
+            [StoreConfigWorker::S_WORKER_ID, EmailTemplateWorker::S_WORKER_ID],
+            StoreConfigWorker::S_WORKER_ID
         );
 
         return $oQuestionHelper->ask($oInput, $oOutput, $oItemQuestion);
