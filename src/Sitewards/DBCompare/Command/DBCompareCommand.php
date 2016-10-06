@@ -16,6 +16,7 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Sitewards\DBCompare\Exception\FileNotFoundException;
 use Sitewards\DBCompare\Exception\FileNotReadableException;
+use Doctrine\DBAL\Exception\ConnectionException;
 
 class DBCompareCommand extends Command
 {
@@ -39,27 +40,37 @@ class DBCompareCommand extends Command
      */
     protected function execute(InputInterface $oInput, OutputInterface $oOutput)
     {
-        $oOutput->writeln('Staring the db:compare');
+        try {
+            $oOutput->writeln('Staring the db:compare');
 
-        $sMainDBPath = $this->getFilePath($oInput, $oOutput, 'Please enter the main database file path:');
-        $sMergingDB = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
-        $iItemToMerge = $this->getItemToMerge($oInput, $oOutput);
+            $sMainDBPath = $this->getFilePath($oInput, $oOutput, 'Please enter the main database file path:');
+            $sMergingDB = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
+            $iItemToMerge = $this->getItemToMerge($oInput, $oOutput);
 
-        $sDBUser = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
-        $sDBPassword = $this->getSensitiveDBInformation(
-            $oInput,
-            $oOutput,
-            'Please enter a valid local database password:'
-        );
+            $sDBUser = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
+            $sDBPassword = $this->getSensitiveDBInformation(
+                $oInput,
+                $oOutput,
+                'Please enter a valid local database password:'
+            );
 
-        $oDBWorker = new DBWorker($sDBUser, $sDBPassword, $iItemToMerge);
-        $oDBWorker->buildTempDatabases();
-        $oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
-        $oDBWorker->insertFromFile(DBWorker::S_MERGE_DB_NAME, $sMergingDB);
-        $oDBWorker->getDifferencesInDatabase();
-        $oDBWorker->cleanTempDatabases();
+            $oDBWorker = new DBWorker($sDBUser, $sDBPassword, $iItemToMerge);
+            $oDBWorker->buildTempDatabases();
+            $oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
+            $oDBWorker->insertFromFile(DBWorker::S_MERGE_DB_NAME, $sMergingDB);
+            $oDBWorker->getDifferencesInDatabase();
+            $oDBWorker->cleanTempDatabases();
 
-        $oOutput->writeln('Ending the db:compare');
+            $oOutput->writeln('Ending the db:compare');
+        } catch (ConnectionException $oException) {
+            $oFormatter = $this->getHelper('formatter');
+            $oOutput->writeln(
+                $oFormatter->formatBlock(
+                    'The database information provided is not valid',
+                    'error'
+                )
+            );
+        }
     }
 
     /**
@@ -78,10 +89,20 @@ class DBCompareCommand extends Command
         $oFilePathQuestion->setValidator(
             function ($sAnswer) {
                 if (!file_exists($sAnswer)) {
-                    throw new FileNotFoundException('The file given cannot be found');
+                    throw new FileNotFoundException(
+                        sprintf(
+                            'The file %s cannot be found',
+                            $sAnswer
+                        )
+                    );
                 }
                 if (!is_readable($sAnswer)) {
-                    throw new FileNotReadableException('The file given cannot be read');
+                    throw new FileNotReadableException(
+                        sprintf(
+                            'The file %s cannot be read',
+                            $sAnswer
+                        )
+                    );
                 }
                 return $sAnswer;
             }
