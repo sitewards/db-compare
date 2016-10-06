@@ -4,7 +4,7 @@ namespace Sitewards\DBCompare\Worker\Item;
 
 use Sitewards\DBCompare\Worker\DBWorker;
 
-class EmailTemplateWorker extends \AbstractItemWorker
+class EmailTemplateWorker extends AbstractItemWorker
 {
     const S_WORKER_ID = 'email_template';
 

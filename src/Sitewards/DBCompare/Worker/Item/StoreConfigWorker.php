@@ -4,7 +4,7 @@ namespace Sitewards\DBCompare\Worker\Item;
 
 use Sitewards\DBCompare\Worker\DBWorker;
 
-class StoreConfigWorker extends \AbstractItemWorker
+class StoreConfigWorker extends AbstractItemWorker
 {
     const S_WORKER_ID = 'system_config';
 

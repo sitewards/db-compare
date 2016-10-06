@@ -1,5 +1,7 @@
 <?php
 
+namespace Sitewards\DBCompare\Worker\Item;
+
 use Doctrine\DBAL\Connection;
 use Symfony\Component\Filesystem\Filesystem;
 use Sitewards\DBCompare\Exception\NoDiffFileNameGivenException;
