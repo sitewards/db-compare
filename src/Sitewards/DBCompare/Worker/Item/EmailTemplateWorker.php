@@ -69,7 +69,7 @@ class EmailTemplateWorker extends AbstractItemWorker
         file_put_contents(
             $this->getDiffFileName(),
             sprintf(
-                "INSERT INTO core_email_template (template_id, template_code, template_text, template_styles, template_type, template_subject, template_sender_name, template_sender_email, added_at, modified_at, orig_template_code, orig_template_variables) VALUE (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE template_text=VALUE(template_text), template_styles=VALUE(template_styles), template_type=VALUE(template_type), template_subject=VALUE(template_subject), template_sender_name=VALUE(template_sender_name), template_sender_email=VALUE(template_sender_email);\n",
+                "INSERT INTO core_email_template (template_id, template_code, template_text, template_styles, template_type, template_subject, template_sender_name, template_sender_email, added_at, modified_at, orig_template_code, orig_template_variables) VALUE (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE template_text=VALUES(template_text), template_styles=VALUES(template_styles), template_type=VALUES(template_type), template_subject=VALUES(template_subject), template_sender_name=VALUES(template_sender_name), template_sender_email=VALUES(template_sender_email);\n",
                 $this->getConnection()->quote($aRowData['template_id'], \PDO::PARAM_INT),
                 $this->getConnection()->quote($aRowData['template_code'], \PDO::PARAM_STR),
                 $this->getConnection()->quote($aRowData['template_text'], \PDO::PARAM_STR),
