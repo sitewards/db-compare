@@ -8,9 +8,7 @@
 
 namespace Sitewards\DBCompare\Command;
 
-use Doctrine\DBAL\Configuration;
-use Doctrine\DBAL\DriverManager;
-use Doctrine\DBAL\Connection;
+use Sitewards\DBCompare\Worker\DBWorker;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,17 +16,10 @@ use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Sitewards\DBCompare\Exception\FileNotFoundException;
 use Sitewards\DBCompare\Exception\FileNotReadableException;
-use Sitewards\DBCompare\Exception\MySqlImportException;
-use Symfony\Component\Filesystem\Filesystem;
+use Doctrine\DBAL\Exception\ConnectionException;
 
 class DBCompareCommand extends Command
 {
-    /**
-     * Names used for the temporary databases
-     */
-    const S_MAIN_DB_NAME = 'db_comp_main_db';
-    const S_MERGE_DB_NAME = 'db_comp_merge_db';
-
     /**
      * Set-up the db:compare command
      */
@@ -49,140 +40,45 @@ class DBCompareCommand extends Command
      */
     protected function execute(InputInterface $oInput, OutputInterface $oOutput)
     {
-        $oOutput->writeln('Staring the db:compare');
+        try {
+            $oOutput->writeln('Staring the db:compare');
 
-        $sMainDBPath = $this->getFilePath($oInput, $oOutput, 'Please enter the main database file path:');
-        $sMergingDB = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
-        $sItemToMerge = $this->getItemToMerge($oInput, $oOutput);
+            $sMainDBPath = $this->getFilePath($oInput, $oOutput, 'Please enter the main database file path:');
+            $sMergingDB = $this->getFilePath($oInput, $oOutput, 'Please enter the merging database file path:');
+            $iItemToMerge = $this->getItemToMerge($oInput, $oOutput);
 
-        $oOutput->writeln('Main DB file: ' . $sMainDBPath);
-        $oOutput->writeln('Merging DB file: ' . $sMergingDB);
-        $oOutput->writeln('Merging item: ' . $sItemToMerge);
-
-        $sDBUser = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
-        $sDBPassword = $this->getSensitiveDBInformation(
-            $oInput,
-            $oOutput,
-            'Please enter a valid local database password:'
-        );
-
-        $oOutput->writeln('DB User: ' . $sDBUser);
-        $oOutput->writeln('DB Password: ' . $sDBPassword);
-
-        $oDBConnection = $this->getDatabaseConnection($sDBUser, $sDBPassword);
-        $this->buildTempDatabases($oDBConnection);
-        $this->insertFromFile($sDBUser, $sDBPassword, self::S_MAIN_DB_NAME, $sMainDBPath);
-        $this->insertFromFile($sDBUser, $sDBPassword, self::S_MERGE_DB_NAME, $sMergingDB);
-        $this->getDifferencesInDatabase($oDBConnection);
-        $this->cleanTempDatabases($oDBConnection);
-
-        $oOutput->writeln('Ending the db:compare');
-    }
-
-    private function getDifferencesInDatabase(Connection $oDBConnection, $iItemType = 0)
-    {
-        if ($iItemType === 0) {
-            $oFileSystem = new Filesystem();
-            $oFileSystem->remove('diff_core_config.sql');
-            $oFileSystem->touch('diff_core_config.sql');
-            $sDiffSql = sprintf(
-                'SELECT
-                    new_config.config_id,
-                    new_config.scope,
-                    new_config.scope_id,
-                    new_config.path,
-                    new_config.value
-                FROM
-                    %s.core_config_data AS new_config
-                WHERE
-                    ROW(
-                        new_config.config_id,
-                        new_config.scope,
-                        new_config.scope_id,
-                        new_config.path,
-                        new_config.value
-                    ) NOT IN (
-                        SELECT
-                            old_config.config_id,
-                            old_config.scope,
-                            old_config.scope_id,
-                            old_config.path,
-                            old_config.value
-                        FROM
-                            %s.core_config_data AS old_config
-                    )',
-                self::S_MERGE_DB_NAME,
-                self::S_MAIN_DB_NAME
+            $sDBUser = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
+            $sDBPassword = $this->getSensitiveDBInformation(
+                $oInput,
+                $oOutput,
+                'Please enter a valid local database password:'
             );
 
-            $oDBStatement = $oDBConnection->prepare($sDiffSql);
-            $oDBStatement->execute();
+            $oDBWorker = new DBWorker($sDBUser, $sDBPassword, $iItemToMerge);
+            $oDBWorker->buildTempDatabases();
+            $oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
+            $oDBWorker->insertFromFile(DBWorker::S_MERGE_DB_NAME, $sMergingDB);
+            $oDBWorker->getDifferencesInDatabase();
+            $oDBWorker->cleanTempDatabases();
 
-            while ($aRowData = $oDBStatement->fetch()) {
-                file_put_contents(
-                    'diff_core_config.sql',
-                    sprintf(
-                        "INSERT INTO core_config_data (config_id, scope, scope_id, path, value) VALUE (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\") ON DUPLICATE KEY UPDATE value=VALUE(value);\n",
-                        $aRowData['config_id'],
-                        $aRowData['scope'],
-                        $aRowData['scope_id'],
-                        $aRowData['path'],
-                        $aRowData['value']
-                    ),
-                    FILE_APPEND | LOCK_EX
-                );
-            }
-        }
-    }
-
-    /**
-     * Insert the sql files given to the tmp databases
-     * 
-     * @param string $sDBUser
-     * @param string $sDBPassword
-     * @param string $sDatabaseName
-     * @param string $sFilePath
-     */
-    private function insertFromFile($sDBUser, $sDBPassword, $sDatabaseName, $sFilePath)
-    {
-        passthru(
-            sprintf(
-                'mysql -u %s -p%s %s < %s',
-                $sDBUser,
-                $sDBPassword,
-                $sDatabaseName,
-                $sFilePath
-            ),
-            $iMysqlError
-        );
-        if ($iMysqlError !== 0) {
-            throw new MySqlImportException(
-                sprintf(
-                    'The sql file %s could not be imported',
-                    $sFilePath
+            $oOutput->writeln('Ending the db:compare');
+        } catch (ConnectionException $oException) {
+            $oFormatter = $this->getHelper('formatter');
+            $oOutput->writeln(
+                $oFormatter->formatBlock(
+                    'The database information provided is not valid',
+                    'error'
+                )
+            );
+        } catch (\Exception $oException) {
+            $oFormatter = $this->getHelper('formatter');
+            $oOutput->writeln(
+                $oFormatter->formatBlock(
+                    $oException->getMessage(),
+                    'error'
                 )
             );
         }
-    }
-
-    /**
-     * @param Connection $oDBConnection
-     */
-    private function buildTempDatabases(Connection $oDBConnection)
-    {
-        $oSchema = $oDBConnection->getSchemaManager();
-        $oSchema->dropAndCreateDatabase(self::S_MAIN_DB_NAME);
-        $oSchema->dropAndCreateDatabase(self::S_MERGE_DB_NAME);
-    }
-
-    /**
-     * @param Connection $oDBConnection
-     */
-    private function cleanTempDatabases(Connection $oDBConnection)
-    {
-        $oSchema = $oDBConnection->getSchemaManager();
-        $oSchema->dropDatabase(self::S_MAIN_DB_NAME);
-        $oSchema->dropDatabase(self::S_MERGE_DB_NAME);
     }
 
     /**
@@ -201,10 +97,20 @@ class DBCompareCommand extends Command
         $oFilePathQuestion->setValidator(
             function ($sAnswer) {
                 if (!file_exists($sAnswer)) {
-                    throw new FileNotFoundException('The file given cannot be found');
+                    throw new FileNotFoundException(
+                        sprintf(
+                            'The file %s cannot be found',
+                            $sAnswer
+                        )
+                    );
                 }
                 if (!is_readable($sAnswer)) {
-                    throw new FileNotReadableException('The file given cannot be read');
+                    throw new FileNotReadableException(
+                        sprintf(
+                            'The file %s cannot be read',
+                            $sAnswer
+                        )
+                    );
                 }
                 return $sAnswer;
             }
@@ -255,27 +161,10 @@ class DBCompareCommand extends Command
         $oQuestionHelper = $this->getHelper('question');
         $oItemQuestion = new ChoiceQuestion(
             'Please select the item you wish to merge',
-            ['system config'],
+            ['system config', 'cms page', 'cms block'],
             '0'
         );
 
         return $oQuestionHelper->ask($oInput, $oOutput, $oItemQuestion);
-    }
-
-    /**
-     * @param $sDBUser
-     * @param $sDBPassword
-     * @return Connection
-     */
-    private function getDatabaseConnection($sDBUser, $sDBPassword)
-    {
-        $oDBConfig = new Configuration();
-        $aConnectionParams = [
-            'user' => $sDBUser,
-            'password' => $sDBPassword,
-            'host' => 'localhost',
-            'driver' => 'pdo_mysql',
-        ];
-        return DriverManager::getConnection($aConnectionParams, $oDBConfig);
     }
 }
