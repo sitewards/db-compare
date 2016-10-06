@@ -70,6 +70,14 @@ class DBCompareCommand extends Command
                     'error'
                 )
             );
+        } catch (\Exception $oException) {
+            $oFormatter = $this->getHelper('formatter');
+            $oOutput->writeln(
+                $oFormatter->formatBlock(
+                    $oException->getMessage(),
+                    'error'
+                )
+            );
         }
     }
 
