@@ -4,6 +4,7 @@ namespace Sitewards\DBCompare\Command;
 
 use Sitewards\DBCompare\Question\FileQuestion;
 use Sitewards\DBCompare\Question\WorkerQuestion;
+use Sitewards\DBCompare\Validator\FilePath;
 use Symfony\Component\Console\Helper\QuestionHelper;
 
 class DBCompareCommandTest extends \PHPUnit_Framework_TestCase
@@ -14,9 +15,10 @@ class DBCompareCommandTest extends \PHPUnit_Framework_TestCase
     public function testConfigure()
     {
         $oQuestionHelper = $this->createMock(QuestionHelper::class);
+        $oValidator      = $this->createMock(FilePath::class);
 
         $oFileQuestion = $this->getMockBuilder(FileQuestion::class)
-            ->setConstructorArgs([$oQuestionHelper])
+            ->setConstructorArgs([$oQuestionHelper, $oValidator])
             ->getMock();
 
         $oWorkerQuestion = $this->getMockBuilder(WorkerQuestion::class)

@@ -7,6 +7,12 @@ use Sitewards\DBCompare\Exception\FileNotReadableException;
 
 class FilePath
 {
+    /**
+     * @param string $sAnswer
+     * @return string
+     * @throws FileNotFoundException
+     * @throws FileNotReadableException
+     */
     public function doValidation($sAnswer)
     {
         if (!file_exists($sAnswer)) {

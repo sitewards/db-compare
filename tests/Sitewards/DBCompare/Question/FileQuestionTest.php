@@ -2,6 +2,7 @@
 
 namespace Sitewards\DBCompare\Question;
 
+use Sitewards\DBCompare\Validator\FilePath;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\Input;
 use Symfony\Component\Console\Output\Output;
@@ -25,7 +26,12 @@ class FileQuestionTest extends \PHPUnit_Framework_TestCase
         $oInput = $this->createMock(Input::class);
         $oOutput = $this->createMock(Output::class);
 
-        $oWorkerQuestion = new FileQuestion($oQuestionHelper);
+        $oValidator      = $this->createMock(FilePath::class);
+
+        $oWorkerQuestion = new FileQuestion(
+            $oQuestionHelper,
+            $oValidator
+        );
         $sWorkerName = $oWorkerQuestion->getFilePath(
             $oInput,
             $oOutput,
@@ -49,8 +55,12 @@ class FileQuestionTest extends \PHPUnit_Framework_TestCase
         $this->expectException(FileNotFoundException::class);
         $oInput = $this->createMock(Input::class);
         $oOutput = $this->createMock(Output::class);
+        $oValidator      = $this->createMock(FilePath::class);
 
-        $oWorkerQuestion = new FileQuestion($oQuestionHelper);
+        $oWorkerQuestion = new FileQuestion(
+            $oQuestionHelper,
+            $oValidator
+        );
         $oWorkerQuestion->getFilePath(
             $oInput,
             $oOutput,

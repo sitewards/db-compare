@@ -14,11 +14,15 @@ class FileQuestion
 {
     /** @var QuestionHelper */
     private $oQuestionHelper;
+    /** @var FilePath */
+    private $oValidator;
 
     public function __construct(
-        QuestionHelper $oQuestionHelper
+        QuestionHelper $oQuestionHelper,
+        FilePath $oValidator
     ) {
         $this->oQuestionHelper = $oQuestionHelper;
+        $this->oValidator      = $oValidator;
     }
 
     /**
@@ -36,7 +40,7 @@ class FileQuestion
     )
     {
         $oFilePathQuestion = new Question($sQuestion);
-        $oFilePathQuestion->setValidator(array(new FilePath(), 'doValidation'));
+        $oFilePathQuestion->setValidator([$this->oValidator, 'doValidation']);
         return $this->oQuestionHelper->ask($oInput, $oOutput, $oFilePathQuestion);
     }
 }
