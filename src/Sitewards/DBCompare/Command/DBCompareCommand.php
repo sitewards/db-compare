@@ -25,7 +25,7 @@ class DBCompareCommand extends Command
     /** @var \Sitewards\DBCompare\Question\DBQuestion */
     private $oDBQuestion;
 
-    /** @var \Sitewards\DBCompare\Factory\ItemFactory */
+    /** @var \Sitewards\DBCompare\Factory\ItemWorkerFactory */
     private $oItemFactory;
 
     /**
@@ -39,7 +39,7 @@ class DBCompareCommand extends Command
         \Sitewards\DBCompare\Question\FileQuestion $oFileQuestion,
         \Sitewards\DBCompare\Question\WorkerQuestion $oWorkerQuestion,
         \Sitewards\DBCompare\Question\DBQuestion $oDBQuestion,
-        \Sitewards\DBCompare\Factory\ItemFactory $oItemFactory,
+        \Sitewards\DBCompare\Factory\ItemWorkerFactory $oItemFactory,
         $sName = null)
     {
         parent::__construct($sName);

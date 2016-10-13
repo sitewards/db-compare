@@ -3,7 +3,7 @@
 namespace Sitewards\DBCompare\Worker;
 
 use Sitewards\DBCompare\Factory\DBConnectionFactory;
-use Sitewards\DBCompare\Factory\ItemFactory;
+use Sitewards\DBCompare\Factory\ItemWorkerFactory;
 use Sitewards\DBCompare\Exception\MySqlImportException;
 
 class DBWorker
@@ -16,7 +16,7 @@ class DBWorker
     private $sItemWorkerId;
     /** @var \Doctrine\DBAL\Connection */
     private $oConnection;
-    /** @var ItemFactory */
+    /** @var ItemWorkerFactory */
     private $oItemFactory;
 
     /**
@@ -29,13 +29,13 @@ class DBWorker
      * @param string $sDBUsername
      * @param string $sDBPassword
      * @param string $sItemWorkerId
-     * @param ItemFactory $oItemFactory
+     * @param ItemWorkerFactory $oItemFactory
      */
     public function __construct(
         $sDBUsername,
         $sDBPassword,
         $sItemWorkerId,
-        ItemFactory $oItemFactory
+        ItemWorkerFactory $oItemFactory
     )
     {
         $this->sDBUsername = $sDBUsername;

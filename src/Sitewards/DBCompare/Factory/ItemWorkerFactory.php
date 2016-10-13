@@ -6,7 +6,7 @@ use Sitewards\DBCompare\Worker\Item\StoreConfigWorker;
 use Sitewards\DBCompare\Exception\NoItemWorkerMappingException;
 use Doctrine\DBAL\Connection;
 
-class ItemFactory
+class ItemWorkerFactory
 {
     /**
      * @param $sItemTypeId
