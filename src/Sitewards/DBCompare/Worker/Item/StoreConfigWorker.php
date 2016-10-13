@@ -89,12 +89,12 @@ class StoreConfigWorker
         file_put_contents(
             $this->sDiffFileName,
             sprintf(
-                "INSERT INTO core_config_data (config_id, scope, scope_id, path, value) VALUE (\"%s\", \"%s\", \"%s\", \"%s\", \"%s\") ON DUPLICATE KEY UPDATE value=VALUE(value);\n",
-                $aRowData['config_id'],
-                $aRowData['scope'],
-                $aRowData['scope_id'],
-                $aRowData['path'],
-                $aRowData['value']
+                "INSERT INTO core_config_data (config_id, scope, scope_id, path, value) VALUE (%s, %s, %s, %s, %s) ON DUPLICATE KEY UPDATE value=VALUES(value);\n",
+                $this->oConnection->quote($aRowData['config_id'], \PDO::PARAM_INT),
+                $this->oConnection->quote($aRowData['scope'], \PDO::PARAM_STR),
+                $this->oConnection->quote($aRowData['scope_id'], \PDO::PARAM_INT),
+                $this->oConnection->quote($aRowData['path'], \PDO::PARAM_STR),
+                $this->oConnection->quote($aRowData['value'], \PDO::PARAM_STR)
             ),
             FILE_APPEND | LOCK_EX
         );
