@@ -76,7 +76,7 @@ class DBCompareCommand extends Command
         try {
             $oOutput->writeln('Staring the db:compare');
 
-            /*$sMainDBPath = $this->oFileQuestion->getFilePath(
+            $sMainDBPath = $this->oFileQuestion->getFilePath(
                 $oInput,
                 $oOutput,
                 'Please enter the main database file path:'
@@ -85,7 +85,7 @@ class DBCompareCommand extends Command
                 $oInput,
                 $oOutput,
                 'Please enter the merging database file path:'
-            );*/
+            );
             $sItemToMerge = $this->oWorkerQuestion->getMergeWorker(
                 $oInput,
                 $oOutput
@@ -108,11 +108,11 @@ class DBCompareCommand extends Command
                 $sItemToMerge,
                 $this->oItemFactory
             );
-            //$oDBWorker->buildTempDatabases();
-            //$oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
-            //$oDBWorker->insertFromFile(DBWorker::S_MERGE_DB_NAME, $sMergingDB);
+            $oDBWorker->buildTempDatabases();
+            $oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
+            $oDBWorker->insertFromFile(DBWorker::S_MERGE_DB_NAME, $sMergingDB);
             $oDBWorker->getDifferencesInDatabase();
-            //$oDBWorker->cleanTempDatabases();
+            $oDBWorker->cleanTempDatabases();
 
             $oOutput->writeln('Ending the db:compare');
         } catch (ConnectionException $oException) {
