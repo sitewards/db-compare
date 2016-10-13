@@ -3,7 +3,7 @@
 namespace Sitewards\DBCompare\Question;
 
 use Symfony\Component\Console\Helper\QuestionHelper;
-use Symfony\Component\Console\Question\Question as SymfonyQuestion;
+use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Sitewards\DBCompare\Exception\FileNotFoundException;
@@ -34,7 +34,7 @@ class FileQuestion
         $sQuestion = ''
     )
     {
-        $oFilePathQuestion = new SymfonyQuestion($sQuestion);
+        $oFilePathQuestion = new Question($sQuestion);
         $oFilePathQuestion->setValidator(
             function ($sAnswer) {
                 if (!file_exists($sAnswer)) {
