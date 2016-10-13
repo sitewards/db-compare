@@ -2,6 +2,7 @@
 
 namespace Sitewards\DBCompare\Command;
 
+use Sitewards\DBCompare\Question\DBQuestion;
 use Sitewards\DBCompare\Question\FileQuestion;
 use Sitewards\DBCompare\Question\WorkerQuestion;
 use Sitewards\DBCompare\Validator\FilePath;
@@ -25,9 +26,14 @@ class DBCompareCommandTest extends \PHPUnit_Framework_TestCase
             ->setConstructorArgs([$oQuestionHelper])
             ->getMock();
 
+        $oDBQuestion = $this->getMockBuilder(DBQuestion::class)
+            ->setConstructorArgs([$oQuestionHelper])
+            ->getMock();
+
         $oDBCompareCommand = new DBCompareCommand(
             $oFileQuestion,
-            $oWorkerQuestion
+            $oWorkerQuestion,
+            $oDBQuestion
         );
 
         $this->assertEquals('db:compare', $oDBCompareCommand->getName());

@@ -10,11 +10,8 @@ namespace Sitewards\DBCompare\Command;
 
 use Sitewards\DBCompare\Worker\DBWorker;
 use Symfony\Component\Console\Command\Command;
-use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Symfony\Component\Console\Question\Question;
-use Symfony\Component\Console\Question\ChoiceQuestion;
 use Doctrine\DBAL\Exception\ConnectionException;
 
 class DBCompareCommand extends Command
@@ -24,6 +21,9 @@ class DBCompareCommand extends Command
 
     /** @var \Sitewards\DBCompare\Question\WorkerQuestion */
     private $oWorkerQuestion;
+
+    /** @var \Sitewards\DBCompare\Question\DBQuestion */
+    private $oDBQuestion;
 
     /**
      * DBCompareCommand constructor.
@@ -35,12 +35,14 @@ class DBCompareCommand extends Command
     public function __construct(
         \Sitewards\DBCompare\Question\FileQuestion $oFileQuestion,
         \Sitewards\DBCompare\Question\WorkerQuestion $oWorkerQuestion,
+        \Sitewards\DBCompare\Question\DBQuestion $oDBQuestion,
         $sName = null)
     {
         parent::__construct($sName);
 
         $this->oFileQuestion   = $oFileQuestion;
         $this->oWorkerQuestion = $oWorkerQuestion;
+        $this->oDBQuestion = $oDBQuestion;
     }
 
     /**
@@ -68,7 +70,6 @@ class DBCompareCommand extends Command
     {
         try {
             $oOutput->writeln('Staring the db:compare');
-            $this->oQuestionHelper = $this->getHelper('question');
 
             $sMainDBPath = $this->oFileQuestion->getFilePath(
                 $oInput,
@@ -88,13 +89,19 @@ class DBCompareCommand extends Command
             $oOutput->writeln('MainDB: ' . $sMainDBPath);
             $oOutput->writeln('MergeDB: ' . $sMergingDB);
             $oOutput->writeln('Worker: ' . $sItemToMerge);
-            /*$sDBUser = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
-            $sDBPassword = $this->getSensitiveDBInformation(
+            $sDBUser = $this->oDBQuestion->getBasicInformation(
+                $oInput,
+                $oOutput,
+                'Please enter a valid local database user:'
+            );
+            $sDBPassword = $this->oDBQuestion->getSensitiveDBInformation(
                 $oInput,
                 $oOutput,
                 'Please enter a valid local database password:'
             );
-
+            $oOutput->writeln('DBUser: ' . $sDBUser);
+            $oOutput->writeln('DBPassword: ' . $sDBPassword);
+/*
             $oDBWorker = new DBWorker($sDBUser, $sDBPassword, $sItemToMerge);
             $oDBWorker->buildTempDatabases();
             $oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
@@ -120,42 +127,5 @@ class DBCompareCommand extends Command
                 )
             );
         }
-    }
-
-    /**
-     * @param InputInterface $oInput
-     * @param OutputInterface $oOutput
-     * @param string $sQuestion
-     * @return string
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
-     * @throws \Symfony\Component\Console\Exception\LogicException
-     */
-    private function getDBInformation(
-        InputInterface $oInput,
-        OutputInterface $oOutput,
-        $sQuestion = ''
-    ) {
-        $oQuestionHelper = $this->getHelper('question');
-        $oDBInfoQuestion = new Question($sQuestion);
-        return $oQuestionHelper->ask($oInput, $oOutput, $oDBInfoQuestion);
-    }
-
-    /**
-     * @param InputInterface $oInput
-     * @param OutputInterface $oOutput
-     * @param string $sQuestion
-     * @return string
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
-     * @throws \Symfony\Component\Console\Exception\LogicException
-     */
-    private function getSensitiveDBInformation(
-        InputInterface $oInput,
-        OutputInterface $oOutput,
-        $sQuestion = ''
-    ) {
-        $oQuestionHelper = $this->getHelper('question');
-        $oDBInfoQuestion = new Question($sQuestion);
-        $oDBInfoQuestion->setHidden(true);
-        return $oQuestionHelper->ask($oInput, $oOutput, $oDBInfoQuestion);
     }
 }

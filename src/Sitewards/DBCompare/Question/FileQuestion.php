@@ -7,8 +7,6 @@ use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Sitewards\DBCompare\Exception\FileNotFoundException;
-use Sitewards\DBCompare\Exception\FileNotReadableException;
 
 class FileQuestion
 {
@@ -17,6 +15,10 @@ class FileQuestion
     /** @var FilePath */
     private $oValidator;
 
+    /**
+     * @param QuestionHelper $oQuestionHelper
+     * @param FilePath $oValidator
+     */
     public function __construct(
         QuestionHelper $oQuestionHelper,
         FilePath $oValidator
@@ -26,7 +28,6 @@ class FileQuestion
     }
 
     /**
-     * @param QuestionHelper $oQuestionHelper
      * @param InputInterface $oInput
      * @param OutputInterface $oOutput
      * @param string $sQuestion

@@ -12,6 +12,9 @@ class WorkerQuestion
     /** @var QuestionHelper */
     private $oQuestionHelper;
 
+    /**
+     * @param QuestionHelper $oQuestionHelper
+     */
     public function __construct(
         QuestionHelper $oQuestionHelper
     ) {
@@ -22,8 +25,7 @@ class WorkerQuestion
      * @param InputInterface $oInput
      * @param OutputInterface $oOutput
      * @return string
-     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
-     * @throws \Symfony\Component\Console\Exception\LogicException
+     * @throws \Symfony\Component\Console\Exception\RuntimeException
      */
     public function getMergeWorker(
         InputInterface $oInput,
