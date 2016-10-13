@@ -2,6 +2,7 @@
 
 namespace Sitewards\DBCompare\Command;
 
+use Sitewards\DBCompare\Factory\ItemFactory;
 use Sitewards\DBCompare\Question\DBQuestion;
 use Sitewards\DBCompare\Question\FileQuestion;
 use Sitewards\DBCompare\Question\WorkerQuestion;
@@ -30,10 +31,14 @@ class DBCompareCommandTest extends \PHPUnit_Framework_TestCase
             ->setConstructorArgs([$oQuestionHelper])
             ->getMock();
 
+        $oItemFactory = $this->getMockBuilder(ItemFactory::class)
+            ->getMock();
+
         $oDBCompareCommand = new DBCompareCommand(
             $oFileQuestion,
             $oWorkerQuestion,
-            $oDBQuestion
+            $oDBQuestion,
+            $oItemFactory
         );
 
         $this->assertEquals('db:compare', $oDBCompareCommand->getName());

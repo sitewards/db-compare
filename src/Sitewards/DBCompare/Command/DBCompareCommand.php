@@ -25,6 +25,9 @@ class DBCompareCommand extends Command
     /** @var \Sitewards\DBCompare\Question\DBQuestion */
     private $oDBQuestion;
 
+    /** @var \Sitewards\DBCompare\Factory\ItemFactory */
+    private $oItemFactory;
+
     /**
      * DBCompareCommand constructor.
      * @param \Sitewards\DBCompare\Question\FileQuestion $oFileQuestion
@@ -36,6 +39,7 @@ class DBCompareCommand extends Command
         \Sitewards\DBCompare\Question\FileQuestion $oFileQuestion,
         \Sitewards\DBCompare\Question\WorkerQuestion $oWorkerQuestion,
         \Sitewards\DBCompare\Question\DBQuestion $oDBQuestion,
+        \Sitewards\DBCompare\Factory\ItemFactory $oItemFactory,
         $sName = null)
     {
         parent::__construct($sName);
@@ -43,6 +47,7 @@ class DBCompareCommand extends Command
         $this->oFileQuestion   = $oFileQuestion;
         $this->oWorkerQuestion = $oWorkerQuestion;
         $this->oDBQuestion = $oDBQuestion;
+        $this->oItemFactory = $oItemFactory;
     }
 
     /**
@@ -71,7 +76,7 @@ class DBCompareCommand extends Command
         try {
             $oOutput->writeln('Staring the db:compare');
 
-            $sMainDBPath = $this->oFileQuestion->getFilePath(
+            /*$sMainDBPath = $this->oFileQuestion->getFilePath(
                 $oInput,
                 $oOutput,
                 'Please enter the main database file path:'
@@ -80,15 +85,12 @@ class DBCompareCommand extends Command
                 $oInput,
                 $oOutput,
                 'Please enter the merging database file path:'
-            );
+            );*/
             $sItemToMerge = $this->oWorkerQuestion->getMergeWorker(
                 $oInput,
                 $oOutput
             );
 
-            $oOutput->writeln('MainDB: ' . $sMainDBPath);
-            $oOutput->writeln('MergeDB: ' . $sMergingDB);
-            $oOutput->writeln('Worker: ' . $sItemToMerge);
             $sDBUser = $this->oDBQuestion->getBasicInformation(
                 $oInput,
                 $oOutput,
@@ -99,17 +101,20 @@ class DBCompareCommand extends Command
                 $oOutput,
                 'Please enter a valid local database password:'
             );
-            $oOutput->writeln('DBUser: ' . $sDBUser);
-            $oOutput->writeln('DBPassword: ' . $sDBPassword);
-/*
-            $oDBWorker = new DBWorker($sDBUser, $sDBPassword, $sItemToMerge);
-            $oDBWorker->buildTempDatabases();
-            $oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
-            $oDBWorker->insertFromFile(DBWorker::S_MERGE_DB_NAME, $sMergingDB);
-            $oDBWorker->getDifferencesInDatabase();
-            $oDBWorker->cleanTempDatabases();
 
-            $oOutput->writeln('Ending the db:compare');*/
+            $oDBWorker = new DBWorker(
+                $sDBUser,
+                $sDBPassword,
+                $sItemToMerge,
+                $this->oItemFactory
+            );
+            //$oDBWorker->buildTempDatabases();
+            //$oDBWorker->insertFromFile(DBWorker::S_MAIN_DB_NAME, $sMainDBPath);
+            //$oDBWorker->insertFromFile(DBWorker::S_MERGE_DB_NAME, $sMergingDB);
+            $oDBWorker->getDifferencesInDatabase();
+            //$oDBWorker->cleanTempDatabases();
+
+            $oOutput->writeln('Ending the db:compare');
         } catch (ConnectionException $oException) {
             $oFormatter = $this->getHelper('formatter');
             $oOutput->writeln(

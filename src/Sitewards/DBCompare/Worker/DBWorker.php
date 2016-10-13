@@ -12,10 +12,12 @@ class DBWorker
     private $sDBUsername;
     /** @var string */
     private $sDBPassword;
-    /** @var int */
-    private $iItemWorkerId;
+    /** @var string */
+    private $sItemWorkerId;
     /** @var \Doctrine\DBAL\Connection */
     private $oConnection;
+    /** @var ItemFactory */
+    private $oItemFactory;
 
     /**
      * Names used for the temporary databases
@@ -26,15 +28,22 @@ class DBWorker
     /**
      * @param string $sDBUsername
      * @param string $sDBPassword
-     * @param int $iItemWorkerId
+     * @param string $sItemWorkerId
+     * @param ItemFactory $oItemFactory
      */
-    public function __construct($sDBUsername, $sDBPassword, $iItemWorkerId)
+    public function __construct(
+        $sDBUsername,
+        $sDBPassword,
+        $sItemWorkerId,
+        ItemFactory $oItemFactory
+    )
     {
         $this->sDBUsername = $sDBUsername;
         $this->sDBPassword = $sDBPassword;
-        $this->iItemWorkerId = $iItemWorkerId;
+        $this->sItemWorkerId = $sItemWorkerId;
 
         $this->oConnection = DBConnectionFactory::getDatabaseConnection($sDBUsername, $sDBPassword);
+        $this->oItemFactory = $oItemFactory;
     }
 
     /**
@@ -58,10 +67,9 @@ class DBWorker
     }
 
     /**
-     * Insert the sql files given to the tmp databases
-     *
-     * @param string $sDatabaseName
-     * @param string $sFilePath
+     * @param $sDatabaseName
+     * @param $sFilePath
+     * @throws MySqlImportException
      */
     public function insertFromFile($sDatabaseName, $sFilePath)
     {
@@ -90,7 +98,7 @@ class DBWorker
      */
     public function getDifferencesInDatabase()
     {
-        $oItemWorker = ItemFactory::createById($this->iItemWorkerId, $this->oConnection);
+        $oItemWorker = $this->oItemFactory->createById($this->sItemWorkerId, $this->oConnection);
         $oItemWorker->processDifferenceFile();
     }
 }

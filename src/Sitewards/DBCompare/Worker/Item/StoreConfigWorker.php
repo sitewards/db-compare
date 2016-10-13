@@ -8,6 +8,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 class StoreConfigWorker
 {
+    const S_WORKER_ID = 'system config';
     /** @var Connection */
     private $oConnection;
     /** @var string */

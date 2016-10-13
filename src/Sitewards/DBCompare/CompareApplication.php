@@ -8,6 +8,7 @@
 
 namespace Sitewards\DBCompare;
 
+use Sitewards\DBCompare\Factory\ItemFactory;
 use Sitewards\DBCompare\Question\DBQuestion;
 use Sitewards\DBCompare\Question\FileQuestion;
 use Sitewards\DBCompare\Question\WorkerQuestion;
@@ -51,7 +52,8 @@ class CompareApplication extends Application
                 new FilePath()
             ),
             new WorkerQuestion($oHelperSet->get('question')),
-            new DBQuestion($oHelperSet->get('question'))
+            new DBQuestion($oHelperSet->get('question')),
+            new ItemFactory()
         );
 
         return $aDefaultCommands;

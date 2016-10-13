@@ -2,6 +2,7 @@
 
 namespace Sitewards\DBCompare\Question;
 
+use Sitewards\DBCompare\Worker\Item\StoreConfigWorker;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -34,7 +35,7 @@ class WorkerQuestion
     {
         $oItemQuestion = new ChoiceQuestion(
             'Please select the item you wish to merge',
-            ['system config', 'cms page', 'cms block'],
+            [StoreConfigWorker::S_WORKER_ID],
             '0'
         );
 
