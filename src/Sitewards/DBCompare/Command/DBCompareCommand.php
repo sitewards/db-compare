@@ -37,6 +37,9 @@ class DBCompareCommand extends Command
      *
      * @param InputInterface $oInput
      * @param OutputInterface $oOutput
+     * @return null
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws \Symfony\Component\Console\Exception\LogicException
      */
     protected function execute(InputInterface $oInput, OutputInterface $oOutput)
     {
@@ -86,6 +89,8 @@ class DBCompareCommand extends Command
      * @param OutputInterface $oOutput
      * @param string $sQuestion
      * @return string
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws \Symfony\Component\Console\Exception\LogicException
      */
     private function getFilePath(
         InputInterface $oInput,
@@ -123,6 +128,8 @@ class DBCompareCommand extends Command
      * @param OutputInterface $oOutput
      * @param string $sQuestion
      * @return string
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws \Symfony\Component\Console\Exception\LogicException
      */
     private function getDBInformation(
         InputInterface $oInput,
@@ -139,6 +146,8 @@ class DBCompareCommand extends Command
      * @param OutputInterface $oOutput
      * @param string $sQuestion
      * @return string
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws \Symfony\Component\Console\Exception\LogicException
      */
     private function getSensitiveDBInformation(
         InputInterface $oInput,
@@ -155,6 +164,8 @@ class DBCompareCommand extends Command
      * @param InputInterface $oInput
      * @param OutputInterface $oOutput
      * @return string
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
+     * @throws \Symfony\Component\Console\Exception\LogicException
      */
     private function getItemToMerge(InputInterface $oInput, OutputInterface $oOutput)
     {

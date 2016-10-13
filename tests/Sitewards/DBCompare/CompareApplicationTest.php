@@ -1,8 +1,6 @@
 <?php
 
-namespace Sitewards\DBCompare\Test;
-
-use Sitewards\DBCompare\CompareApplication;
+namespace Sitewards\DBCompare;
 
 class CompareApplicationTest extends \PHPUnit_Framework_TestCase
 {
