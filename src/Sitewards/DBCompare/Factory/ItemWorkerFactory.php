@@ -6,18 +6,19 @@ use Sitewards\DBCompare\Worker\Item\StoreConfigWorker;
 use Sitewards\DBCompare\Exception\NoItemWorkerMappingException;
 use Doctrine\DBAL\Connection;
 
-class ItemFactory
+class ItemWorkerFactory
 {
     /**
-     * @param int $iItemTypeId
+     * @param $sItemTypeId
      * @param Connection $oConnection
      * @return StoreConfigWorker
+     * @throws NoItemWorkerMappingException
      */
-    public static function createById($iItemTypeId, Connection $oConnection)
+    public function createById($sItemTypeId, Connection $oConnection)
     {
-        if ($iItemTypeId === 0) {
+        if ($sItemTypeId === StoreConfigWorker::S_WORKER_ID) {
             return new StoreConfigWorker($oConnection);
         }
-        throw new NoItemWorkerMappingException($iItemTypeId);
+        throw new NoItemWorkerMappingException($sItemTypeId);
     }
 }

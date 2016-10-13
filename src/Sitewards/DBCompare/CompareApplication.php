@@ -8,7 +8,13 @@
 
 namespace Sitewards\DBCompare;
 
+use Sitewards\DBCompare\Factory\ItemWorkerFactory;
+use Sitewards\DBCompare\Question\DBQuestion;
+use Sitewards\DBCompare\Question\FileQuestion;
+use Sitewards\DBCompare\Question\WorkerQuestion;
+use Sitewards\DBCompare\Validator\FilePath;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\InputInterface;
 use Sitewards\DBCompare\Command\DBCompareCommand;
 
@@ -29,7 +35,8 @@ class CompareApplication extends Application
     /**
      * Gets the default commands that should always be available.
      *
-     * @return array An array of default Command instances
+     * @return \Symfony\Component\Console\Command\Command[]
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
     protected function getDefaultCommands()
     {
@@ -37,7 +44,19 @@ class CompareApplication extends Application
         // which is used when using the --help option
         $aDefaultCommands = parent::getDefaultCommands();
 
-        $aDefaultCommands[] = new DBCompareCommand();
+        /** @var HelperSet $oHelperSet */
+        $oHelperSet      = $this->getDefaultHelperSet();
+        $oQuestionHelper = $oHelperSet->get('question');
+
+        $aDefaultCommands[] = new DBCompareCommand(
+            new FileQuestion(
+                $oQuestionHelper,
+                new FilePath()
+            ),
+            new WorkerQuestion($oQuestionHelper),
+            new DBQuestion($oQuestionHelper),
+            new ItemWorkerFactory()
+        );
 
         return $aDefaultCommands;
     }

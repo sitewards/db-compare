@@ -21,6 +21,7 @@ class DBConnectionFactory
             'password' => $sDBPassword,
             'host' => 'localhost',
             'driver' => 'pdo_mysql',
+            'charset' => 'utf8'
         ];
         return DriverManager::getConnection($aConnectionParams, $oDBConfig);
     }
