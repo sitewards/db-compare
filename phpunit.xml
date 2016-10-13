@@ -15,14 +15,11 @@
     <filter>
         <whitelist processUncoveredFilesFromWhitelist="true">
             <directory suffix=".php">./src/Sitewards/DBCompare/</directory>
-            <exclude>
-                <directory suffix=".php">./src/Sitewards/DBCompare/Test/</directory>
-            </exclude>
         </whitelist>
     </filter>
     <testsuites>
         <testsuite name="Sitewards DB Compare Test Suite">
-            <directory>./src/Sitewards/DBCompare/Test/</directory>
+            <directory>./tests</directory>
         </testsuite>
     </testsuites>
 </phpunit>
