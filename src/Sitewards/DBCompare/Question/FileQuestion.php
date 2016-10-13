@@ -2,6 +2,7 @@
 
 namespace Sitewards\DBCompare\Question;
 
+use Sitewards\DBCompare\Validator\FilePath;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Question\Question;
 use Symfony\Component\Console\Input\InputInterface;
@@ -35,27 +36,7 @@ class FileQuestion
     )
     {
         $oFilePathQuestion = new Question($sQuestion);
-        $oFilePathQuestion->setValidator(
-            function ($sAnswer) {
-                if (!file_exists($sAnswer)) {
-                    throw new FileNotFoundException(
-                        sprintf(
-                            'The file %s cannot be found',
-                            $sAnswer
-                        )
-                    );
-                }
-                if (!is_readable($sAnswer)) {
-                    throw new FileNotReadableException(
-                        sprintf(
-                            'The file %s cannot be read',
-                            $sAnswer
-                        )
-                    );
-                }
-                return $sAnswer;
-            }
-        );
+        $oFilePathQuestion->setValidator(array(new FilePath(), 'doValidation'));
         return $this->oQuestionHelper->ask($oInput, $oOutput, $oFilePathQuestion);
     }
 }

@@ -2,8 +2,6 @@
 
 namespace Sitewards\DBCompare\Question;
 
-use Sitewards\DBCompare\Question\FileQuestion;
-use Sitewards\DBCompare\Question\WorkerQuestion;
 use Symfony\Component\Console\Helper\QuestionHelper;
 use Symfony\Component\Console\Input\Input;
 use Symfony\Component\Console\Output\Output;
