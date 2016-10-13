@@ -35,7 +35,8 @@ class CompareApplication extends Application
     /**
      * Gets the default commands that should always be available.
      *
-     * @return array An array of default Command instances
+     * @return \Symfony\Component\Console\Command\Command[]
+     * @throws \Symfony\Component\Console\Exception\InvalidArgumentException
      */
     protected function getDefaultCommands()
     {
@@ -44,15 +45,16 @@ class CompareApplication extends Application
         $aDefaultCommands = parent::getDefaultCommands();
 
         /** @var HelperSet $oHelperSet */
-        $oHelperSet = $this->getDefaultHelperSet();
+        $oHelperSet      = $this->getDefaultHelperSet();
+        $oQuestionHelper = $oHelperSet->get('question');
 
         $aDefaultCommands[] = new DBCompareCommand(
             new FileQuestion(
-                $oHelperSet->get('question'),
+                $oQuestionHelper,
                 new FilePath()
             ),
-            new WorkerQuestion($oHelperSet->get('question')),
-            new DBQuestion($oHelperSet->get('question')),
+            new WorkerQuestion($oQuestionHelper),
+            new DBQuestion($oQuestionHelper),
             new ItemFactory()
         );
 
