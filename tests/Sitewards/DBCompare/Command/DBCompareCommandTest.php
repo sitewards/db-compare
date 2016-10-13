@@ -2,6 +2,9 @@
 
 namespace Sitewards\DBCompare\Command;
 
+use Sitewards\DBCompare\Question\FileQuestion;
+use Sitewards\DBCompare\Question\WorkerQuestion;
+
 class DBCompareCommandTest extends \PHPUnit_Framework_TestCase
 {
     /**
@@ -9,7 +12,10 @@ class DBCompareCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function testConfigure()
     {
-        $oDBCompareCommand = new DBCompareCommand();
+        $oDBCompareCommand = new DBCompareCommand(
+            new FileQuestion(),
+            new WorkerQuestion()
+        );
         $this->assertEquals('db:compare', $oDBCompareCommand->getName());
         $this->assertEquals('Compare two database and get a diff file', $oDBCompareCommand->getDescription());
         $this->assertEquals(
