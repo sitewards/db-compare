@@ -22,9 +22,6 @@ class DBCompareCommand extends Command
     /** @var \Sitewards\DBCompare\Question\FileQuestion */
     private $oFileQuestion;
 
-    /** @var QuestionHelper */
-    private $oQuestionHelper;
-
     /** @var \Sitewards\DBCompare\Question\WorkerQuestion */
     private $oWorkerQuestion;
 
@@ -74,23 +71,23 @@ class DBCompareCommand extends Command
             $this->oQuestionHelper = $this->getHelper('question');
 
             $sMainDBPath = $this->oFileQuestion->getFilePath(
-                $this->oQuestionHelper,
                 $oInput,
                 $oOutput,
                 'Please enter the main database file path:'
             );
             $sMergingDB = $this->oFileQuestion->getFilePath(
-                $this->oQuestionHelper,
                 $oInput,
                 $oOutput,
                 'Please enter the merging database file path:'
             );
             $sItemToMerge = $this->oWorkerQuestion->getMergeWorker(
-                $this->oQuestionHelper,
                 $oInput,
                 $oOutput
             );
 
+            $oOutput->writeln('MainDB: ' . $sMainDBPath);
+            $oOutput->writeln('MergeDB: ' . $sMergingDB);
+            $oOutput->writeln('Worker: ' . $sItemToMerge);
             /*$sDBUser = $this->getDBInformation($oInput, $oOutput, 'Please enter a valid local database user:');
             $sDBPassword = $this->getSensitiveDBInformation(
                 $oInput,

@@ -11,6 +11,7 @@ namespace Sitewards\DBCompare;
 use Sitewards\DBCompare\Question\FileQuestion;
 use Sitewards\DBCompare\Question\WorkerQuestion;
 use Symfony\Component\Console\Application;
+use Symfony\Component\Console\Helper\HelperSet;
 use Symfony\Component\Console\Input\InputInterface;
 use Sitewards\DBCompare\Command\DBCompareCommand;
 
@@ -39,9 +40,12 @@ class CompareApplication extends Application
         // which is used when using the --help option
         $aDefaultCommands = parent::getDefaultCommands();
 
+        /** @var HelperSet $oHelperSet */
+        $oHelperSet = $this->getDefaultHelperSet();
+
         $aDefaultCommands[] = new DBCompareCommand(
-            new FileQuestion(),
-            new WorkerQuestion()
+            new FileQuestion($oHelperSet->get('question')),
+            new WorkerQuestion($oHelperSet->get('question'))
         );
 
         return $aDefaultCommands;

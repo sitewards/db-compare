@@ -4,6 +4,7 @@ namespace Sitewards\DBCompare\Command;
 
 use Sitewards\DBCompare\Question\FileQuestion;
 use Sitewards\DBCompare\Question\WorkerQuestion;
+use Symfony\Component\Console\Helper\QuestionHelper;
 
 class DBCompareCommandTest extends \PHPUnit_Framework_TestCase
 {
@@ -12,10 +13,21 @@ class DBCompareCommandTest extends \PHPUnit_Framework_TestCase
      */
     public function testConfigure()
     {
+        $oQuestionHelper = $this->createMock(QuestionHelper::class);
+
+        $oFileQuestion = $this->getMockBuilder(FileQuestion::class)
+            ->setConstructorArgs([$oQuestionHelper])
+            ->getMock();
+
+        $oWorkerQuestion = $this->getMockBuilder(WorkerQuestion::class)
+            ->setConstructorArgs([$oQuestionHelper])
+            ->getMock();
+
         $oDBCompareCommand = new DBCompareCommand(
-            new FileQuestion(),
-            new WorkerQuestion()
+            $oFileQuestion,
+            $oWorkerQuestion
         );
+
         $this->assertEquals('db:compare', $oDBCompareCommand->getName());
         $this->assertEquals('Compare two database and get a diff file', $oDBCompareCommand->getDescription());
         $this->assertEquals(

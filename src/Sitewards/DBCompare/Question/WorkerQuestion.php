@@ -9,6 +9,14 @@ use Symfony\Component\Console\Question\ChoiceQuestion;
 
 class WorkerQuestion
 {
+    /** @var QuestionHelper */
+    private $oQuestionHelper;
+
+    public function __construct(
+        QuestionHelper $oQuestionHelper
+    ) {
+        $this->oQuestionHelper = $oQuestionHelper;
+    }
 
     /**
      * @param InputInterface $oInput
@@ -18,7 +26,6 @@ class WorkerQuestion
      * @throws \Symfony\Component\Console\Exception\LogicException
      */
     public function getMergeWorker(
-        QuestionHelper $oQuestionHelper,
         InputInterface $oInput,
         OutputInterface $oOutput
     )
@@ -29,6 +36,6 @@ class WorkerQuestion
             '0'
         );
 
-        return $oQuestionHelper->ask($oInput, $oOutput, $oItemQuestion);
+        return $this->oQuestionHelper->ask($oInput, $oOutput, $oItemQuestion);
     }
 }

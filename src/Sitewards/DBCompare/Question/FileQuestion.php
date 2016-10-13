@@ -11,6 +11,15 @@ use Sitewards\DBCompare\Exception\FileNotReadableException;
 
 class FileQuestion
 {
+    /** @var QuestionHelper */
+    private $oQuestionHelper;
+
+    public function __construct(
+        QuestionHelper $oQuestionHelper
+    ) {
+        $this->oQuestionHelper = $oQuestionHelper;
+    }
+
     /**
      * @param QuestionHelper $oQuestionHelper
      * @param InputInterface $oInput
@@ -20,7 +29,6 @@ class FileQuestion
      * @throws \Symfony\Component\Console\Exception\RuntimeException
      */
     public function getFilePath(
-        QuestionHelper $oQuestionHelper,
         InputInterface $oInput,
         OutputInterface $oOutput,
         $sQuestion = ''
@@ -48,6 +56,6 @@ class FileQuestion
                 return $sAnswer;
             }
         );
-        return $oQuestionHelper->ask($oInput, $oOutput, $oFilePathQuestion);
+        return $this->oQuestionHelper->ask($oInput, $oOutput, $oFilePathQuestion);
     }
 }
